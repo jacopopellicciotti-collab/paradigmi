@@ -1,0 +1,748 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Laboratorio dei paradigmi</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap">
+<style>
+/* Layout: tre piani sovrapposti (1 Paradigma, 2 Temi, 3 Forme) su fondo bianco.
+   Colore = tema, sempre: blu presente, viola perfetto, giallo supino. Verde/rosso solo per giusto/sbagliato. */
+:root{
+  color-scheme:light;
+  --bg:#ffffff; --panel:#f7f8fa; --ink:#15171c; --muted:#6a6f7a; --line:#e4e6eb; --line-2:#d3d6dd;
+  --btn:#15171c; --btn-ink:#ffffff;
+  --pres:#1d63d8; --pres-bg:#eaf1fd; --pres-line:#b8cff5;
+  --perf:#7c3aed; --perf-bg:#f2ecfe; --perf-line:#d3c0fa;
+  --sup:#a86b00;  --sup-bg:#fff5d9; --sup-line:#f3d77e; --sup-dot:#f2b200;
+  --ok:#16803c; --ok-bg:#e7f6ec; --bad:#c42b1c; --bad-bg:#fdecea;
+  --font:'Aptos','Aptos Display','Figtree','Segoe UI Variable Text','Segoe UI',system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{background:var(--bg)}
+body{margin:0;color:var(--ink);font-family:var(--font);font-size:16.5px;line-height:1.5}
+.wrap{max-width:1120px;margin:0 auto;padding-inline:24px;padding-block:28px 64px}
+@media (max-width:520px){.wrap{padding-inline:16px}}
+h1,h2,h3{margin:0;font-weight:700;text-wrap:balance}
+h1{font-size:clamp(1.7rem,3.6vw,2.3rem);letter-spacing:-.02em;line-height:1.1}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.muted{color:var(--muted)}
+.lat{font-style:italic}
+.tp{color:var(--pres);font-weight:700} .tf{color:var(--perf);font-weight:700} .ts{color:var(--sup);font-weight:700}
+.dot{display:inline-block;width:.6em;height:.6em;border-radius:50%;flex:none}
+.dot.pres{background:var(--pres)} .dot.perf{background:var(--perf)} .dot.sup{background:var(--sup-dot)}
+
+header.top{display:flex;flex-wrap:wrap;gap:14px 28px;align-items:end;justify-content:space-between;margin-bottom:20px}
+header.top p{margin:6px 0 0;color:var(--muted);max-width:58ch}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:.92rem}
+.legend span{display:inline-flex;gap:7px;align-items:center}
+
+.toolbar{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;justify-content:space-between;margin-bottom:18px}
+.modes{display:inline-flex;background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:4px;flex-wrap:wrap}
+.modes button{border:0;background:none;padding:7px 16px;border-radius:999px;font-weight:600;color:var(--muted);cursor:pointer}
+.modes button[aria-pressed="true"]{background:var(--btn);color:var(--btn-ink)}
+.actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.score{font-variant-numeric:tabular-nums;color:var(--muted);font-size:.9rem}
+.score b{color:var(--ink)}
+
+.btn{border:1px solid var(--btn);background:var(--btn);color:var(--btn-ink);padding:8px 16px;border-radius:999px;font-weight:600;cursor:pointer}
+.btn.ghost{background:var(--bg);color:var(--ink);border-color:var(--line-2)}
+.btn.ghost:hover{border-color:var(--ink)}
+.btn.small{padding:5px 12px;font-size:.9rem}
+
+/* piani */
+.level{border:1px solid var(--line);border-radius:18px;background:var(--bg);transition:border-color .2s, box-shadow .2s}
+.level.active{border-color:var(--ink);box-shadow:0 8px 24px -18px rgba(21,23,28,.45)}
+.level.done{border-color:var(--ok)}
+.lv-head{display:flex;gap:14px;align-items:center;padding:14px 20px;border-bottom:1px solid var(--line);background:var(--panel);border-radius:18px 18px 0 0}
+.lv-n{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;font-weight:700;background:var(--bg);border:1.5px solid var(--line-2);flex:none}
+.level.active .lv-n{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.level.done .lv-n{background:var(--ok);color:#fff;border-color:var(--ok)}
+.lv-head h2{font-size:1.15rem}
+.lv-head p{margin:0;color:var(--muted);font-size:.9rem}
+.lv-head .state{margin-left:auto;font-size:.88rem;font-weight:600}
+.lv-body{padding:20px}
+@media (max-width:520px){.lv-body{padding:16px 14px}.lv-head{padding:12px 14px}}
+.conn{display:flex;justify-content:center;align-items:center;gap:8px;color:var(--muted);font-size:.85rem;font-weight:600;padding:6px 0;letter-spacing:.02em}
+.conn svg{width:18px;height:26px}
+
+/* piano 1: paradigma */
+.entry{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:10px}
+.field{flex:1 1 320px;min-width:0;padding:10px 14px;border:1px solid var(--line-2);border-radius:12px;background:var(--bg);font-size:1.12rem}
+.samples{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:18px;font-size:.9rem}
+.samples button{border:1px solid var(--line);background:var(--bg);border-radius:999px;padding:2px 12px;cursor:pointer;font-style:italic}
+.samples button:hover{border-color:var(--ink)}
+.samples .plain{font-style:normal}
+.pv{display:flex;flex-wrap:wrap;gap:10px 14px;justify-content:center}
+.pv .g{display:flex;flex-direction:column;align-items:stretch;gap:6px;min-width:0}
+.pv .w{font-size:clamp(1.3rem,2.6vw,1.9rem);font-style:italic;font-weight:500;text-align:center;white-space:nowrap;padding-inline:4px}
+.pv .bar{height:10px;border:2.5px solid var(--c);border-top:0;border-radius:0 0 10px 10px}
+.pv .l{font-size:.8rem;color:var(--muted);text-align:center;line-height:1.25}
+.pv .g.pres{--c:var(--pres)} .pv .g.perf{--c:var(--perf)} .pv .g.sup{--c:var(--sup-dot)} .pv .g.inf{--c:var(--line-2)}
+.pv .g.dim{opacity:.35}
+.conj-tag{display:block;text-align:center;margin-top:12px;font-size:.88rem;color:var(--muted)}
+.msg{padding:9px 14px;border-radius:10px;margin:0 0 12px;font-size:.95rem}
+.msg.bad{background:var(--bad-bg);color:var(--bad)}
+.msg.warn{background:var(--panel);color:var(--ink);border:1px solid var(--line)}
+
+/* piano 2: temi (3 colonne, allineate con il piano 3) */
+.cols{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+@media (max-width:760px){.cols{grid-template-columns:1fr}}
+.tcard{border-radius:14px;background:var(--cbg);border:1.5px solid var(--cline);padding:14px;display:flex;flex-direction:column;gap:4px;align-items:center;text-align:center;min-width:0}
+.tcard.pres{--c:var(--pres);--cbg:var(--pres-bg);--cline:var(--pres-line)}
+.tcard.perf{--c:var(--perf);--cbg:var(--perf-bg);--cline:var(--perf-line)}
+.tcard.sup{--c:var(--sup);--cbg:var(--sup-bg);--cline:var(--sup-line)}
+.tcard .tl{font-size:.8rem;text-transform:uppercase;letter-spacing:.08em;font-weight:700;color:var(--c)}
+.tcard .from{font-size:.92rem;color:var(--muted)}
+.tcard .from .lat{color:var(--ink)}
+.tcard .tv{font-size:clamp(1.7rem,3vw,2.3rem);font-weight:700;font-style:italic;color:var(--c);line-height:1.2}
+.tcard .tuse{font-size:.83rem;color:var(--muted)}
+.tcard input{width:100%;max-width:190px;text-align:center;border:1.5px solid var(--cline);background:var(--bg);border-radius:10px;padding:6px 8px;font-size:1.3rem;font-style:italic;margin-top:4px}
+.tcard input:focus{border-color:var(--c)}
+.tcard .qfb{font-size:.85rem;min-height:1.2em;font-weight:600}
+.qfb.ok{color:var(--ok)} .qfb.bad{color:var(--bad)}
+.tcard.right{box-shadow:0 0 0 3px var(--c)}
+.lv-foot{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin-top:16px}
+.fb{font-size:.95rem;padding:7px 12px;border-radius:10px}
+.fb:empty{display:none}
+.fb.ok{background:var(--ok-bg);color:var(--ok)}
+.fb.bad{background:var(--bad-bg);color:var(--bad)}
+.fb.info{background:var(--panel);color:var(--ink)}
+.fb .lat{font-weight:600}
+
+/* piano 3: forme */
+.fcol{border:1px solid var(--line);border-top:4px solid var(--c);border-radius:12px;overflow:hidden;min-width:0}
+.fcol.pres{--c:var(--pres)} .fcol.perf{--c:var(--perf)} .fcol.sup{--c:var(--sup-dot)}
+.fcol .brick{padding:10px 14px 0;font-size:.88rem;color:var(--muted)}
+.fcol details{border-bottom:1px solid var(--line)}
+.fcol details:last-child{border-bottom:0}
+.fcol summary{display:grid;grid-template-columns:1fr auto;gap:8px;padding:9px 14px;cursor:pointer;list-style:none;align-items:baseline}
+.fcol summary::-webkit-details-marker{display:none}
+.fcol summary:hover{background:var(--panel)}
+.fcol summary .tn{font-size:.93rem}
+.fcol summary .tn::before{content:"›";display:inline-block;width:1em;color:var(--muted);transition:transform .15s}
+.fcol details[open] summary .tn::before{transform:rotate(90deg)}
+.fcol summary .sample{font-style:italic;font-size:1.05rem;text-align:right}
+.ctab{padding:0 14px 12px;overflow-x:auto}
+.ctab table{border-collapse:collapse;width:100%}
+.ctab th{font-size:.72rem;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);text-align:left;padding:4px 8px 4px 0}
+.ctab td{padding:2px 8px 2px 0;white-space:nowrap}
+.ctab td.f{font-style:italic;font-size:1.05rem}
+.ctab td.p{color:var(--muted);font-size:.83rem}
+.bigform{font-size:clamp(2.2rem,6vw,3.4rem);font-style:italic;font-weight:600;line-height:1.1;text-align:center;margin:4px 0 16px;overflow-wrap:anywhere}
+.req{font-size:clamp(1.1rem,2.4vw,1.35rem);font-weight:700;text-align:center;margin:0 0 14px}
+.task{display:grid;grid-template-columns:minmax(0,1fr);gap:14px;max-width:720px;margin:0 auto}
+.task h3{font-size:.98rem;margin-bottom:6px}
+.task .help{font-size:.88rem;color:var(--muted);margin:0 0 8px}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.row select,.row input[type=text]{padding:8px 11px;border:1px solid var(--line-2);border-radius:10px;background:var(--bg);min-width:0}
+.row input[type=text]{font-size:1.1rem;font-style:italic;flex:1 1 220px}
+.row select{flex:1 1 140px}
+
+.settings{border:1px solid var(--line);border-radius:14px;margin-bottom:18px}
+.settings>summary{padding:10px 16px;cursor:pointer;font-weight:600;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.settings>summary .sum{font-weight:400;color:var(--muted);font-size:.9rem}
+.set-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px 24px;padding:4px 16px 16px}
+.set-grid fieldset{border:0;padding:0;margin:0;min-width:0}
+.set-grid legend{font-size:.74rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:700;margin-bottom:6px}
+.set-grid label{display:flex;gap:8px;align-items:center;padding:2px 0;cursor:pointer}
+.custom-list{display:flex;flex-wrap:wrap;gap:6px}
+.pill{display:inline-flex;align-items:center;gap:4px;padding:2px 6px 2px 11px;border:1px solid var(--line);border-radius:999px;font-style:italic}
+.pill button{border:0;background:none;cursor:pointer;color:var(--muted);padding:0 4px;font-size:1rem;line-height:1;font-style:normal}
+footer{margin-top:40px;font-size:.85rem;color:var(--muted);max-width:75ch}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1>Laboratorio dei paradigmi</h1>
+      <p>Tre piani: in alto il paradigma, al centro i temi, in basso le forme dell'indicativo. Scendi dal paradigma alle forme o risali da una forma al paradigma.</p>
+    </div>
+    <div class="legend" aria-label="Legenda dei colori">
+      <span><i class="dot pres"></i>tema del presente</span>
+      <span><i class="dot perf"></i>tema del perfetto</span>
+      <span><i class="dot sup"></i>tema del supino</span>
+    </div>
+  </header>
+
+  <div class="toolbar">
+    <div class="modes" role="group" aria-label="Modalità">
+      <button type="button" data-mode="esplora" aria-pressed="true">Esplora</button>
+      <button type="button" data-mode="scendi" aria-pressed="false">Scendi ↓ dal paradigma alla forma</button>
+      <button type="button" data-mode="sali" aria-pressed="false">Sali ↑ dalla forma al paradigma</button>
+    </div>
+    <div class="actions" id="ex-actions" hidden>
+      <span class="score" id="score"></span>
+      <button class="btn ghost small" type="button" id="btn-sol">Mostra la soluzione</button>
+      <button class="btn small" type="button" id="btn-new">Nuovo esercizio</button>
+    </div>
+  </div>
+
+  <details class="settings" id="settings" hidden>
+    <summary>Impostazioni esercizi <span class="sum"></span></summary>
+    <div class="set-grid">
+      <fieldset><legend>Coniugazioni</legend>
+        <label><input type="checkbox" data-set="conj" value="1"> 1ª (laudo)</label>
+        <label><input type="checkbox" data-set="conj" value="2"> 2ª (moneo)</label>
+        <label><input type="checkbox" data-set="conj" value="3"> 3ª (lego)</label>
+        <label><input type="checkbox" data-set="conj" value="3m"> 3ª mista (capio)</label>
+        <label><input type="checkbox" data-set="conj" value="4"> 4ª (audio)</label>
+      </fieldset>
+      <fieldset><legend>Temi</legend>
+        <label><input type="checkbox" data-set="sys" value="pres"> <i class="dot pres"></i> presente</label>
+        <label><input type="checkbox" data-set="sys" value="perf"> <i class="dot perf"></i> perfetto</label>
+        <label><input type="checkbox" data-set="sys" value="sup"> <i class="dot sup"></i> supino</label>
+        <legend style="margin-top:12px">Diatesi</legend>
+        <label><input type="checkbox" data-set="passive"> includi il passivo</label>
+      </fieldset>
+      <fieldset><legend>Salendo, chiedi anche</legend>
+        <label><input type="checkbox" data-set="askAnalysis"> l'analisi della forma</label>
+      </fieldset>
+      <fieldset><legend>Verbi aggiunti</legend>
+        <div class="custom-list"></div>
+        <label style="margin-top:6px"><input type="checkbox" data-set="onlyCustom"> usa solo questi verbi</label>
+      </fieldset>
+      <fieldset style="grid-column:1/-1"><legend>Carica nuovi verbi</legend>
+        <textarea id="bulk" rows="4" spellcheck="false" style="width:100%;padding:8px 11px;border:1px solid var(--line-2);border-radius:10px;font:inherit;font-style:italic;resize:vertical" placeholder="Un paradigma per riga, anche abbreviato. Aggiungi «intr» per i verbi intransitivi:&#10;traho, is, traxi, tractum, ere&#10;cado, is, cecidi, casum, ere intr"></textarea>
+        <div class="row" style="margin-top:8px"><button class="btn small" type="button" id="bulk-add">Aggiungi i verbi</button><span class="fb" id="bulk-fb"></span></div>
+      </fieldset>
+    </div>
+  </details>
+
+  <section class="level" id="L1">
+    <div class="lv-head"><span class="lv-n">1</span><div><h2>Paradigma</h2><p id="L1s"></p></div><span class="state" id="L1st"></span></div>
+    <div class="lv-body" id="L1b"></div>
+  </section>
+  <div class="conn" id="c12"></div>
+  <section class="level" id="L2">
+    <div class="lv-head"><span class="lv-n">2</span><div><h2>Temi</h2><p id="L2s"></p></div><span class="state" id="L2st"></span></div>
+    <div class="lv-body" id="L2b"></div>
+  </section>
+  <div class="conn" id="c23"></div>
+  <section class="level" id="L3">
+    <div class="lv-head"><span class="lv-n">3</span><div><h2>Forme</h2><p id="L3s"></p></div><span class="state" id="L3st"></span></div>
+    <div class="lv-body" id="L3b"></div>
+  </section>
+
+  <footer>Solo indicativo. Verbi regolari delle quattro coniugazioni e della mista (in -io); deponenti e irregolari non sono gestiti. Le forme sono scritte senza quantità; i verbi intransitivi della lista non hanno forme passive.</footer>
+</div>
+
+<script>
+(function(){
+'use strict';
+const $ = (s, el=document) => el.querySelector(s);
+const $$ = (s, el=document) => Array.from(el.querySelectorAll(s));
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const norm = s => String(s||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().replace(/j/g,'i').replace(/[–—−]/g,'-').replace(/\s+/g,' ').trim();
+const nf = s => norm(s).replace(/[·.\-]/g,'').replace(/\s+/g,' ').trim();
+const store = {
+  get(k, d){ try{ const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; }catch(e){ return d; } },
+  set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+};
+const rnd = a => a[Math.floor(Math.random()*a.length)];
+
+const T = {ind_pres:'Presente', ind_impf:'Imperfetto', ind_fut:'Futuro semplice', ind_perf:'Perfetto', ind_ppf:'Piuccheperfetto', ind_futant:'Futuro anteriore'};
+const SYS = {pres:{l:'presente',cls:'tp'}, perf:{l:'perfetto',cls:'tf'}, sup:{l:'supino',cls:'ts'}};
+const SYSK = ['pres','perf','sup'];
+const CONJ = {'1':'1ª coniugazione','2':'2ª coniugazione','3':'3ª coniugazione','3m':'3ª coniugazione mista (in -io)','4':'4ª coniugazione'};
+const P6 = [[1,'s'],[2,'s'],[3,'s'],[1,'p'],[2,'p'],[3,'p']];
+const GN = {m:'maschile',f:'femminile',n:'neutro'};
+
+/* ---------- paradigma ---------- */
+const ABBR = new Set(['as','es','is','avi','atum','are','ui','itum','ere','ivi','ii','ire','atus','itus']);
+function parseParadigm(input, opts={}){
+  const s = norm(input);
+  if(!s) return {error:'Scrivi un paradigma, ad esempio: laudo, laudas, laudavi, laudatum, laudare.'};
+  let parts = /[,;\/]/.test(s) ? s.split(/[,;\/]/) : s.split(' ');
+  parts = parts.map(p => p.trim().replace(/\s+/g,'')).filter((p,i,a) => p.length || (i>0 && i<a.length-1));
+  if(parts.length < 4 || parts.length > 5) return {error:'Servono le voci del paradigma separate da virgole: laudo, laudas, laudavi, laudatum, laudare.'};
+  const lemma = parts[0].replace(/^-+/,'');
+  if(/or$/.test(lemma)) return {error:'I verbi deponenti (in -or) non sono gestiti.'};
+  if(!/o$/.test(lemma) || lemma.length < 2) return {error:'La prima voce deve essere la 1ª persona singolare del presente, in -o (es. laudo).'};
+  if(['sum','possum','fero','eo','volo','nolo','malo'].includes(lemma)) return {error:'I verbi irregolari non sono gestiti.'};
+  let [sg2, perf, sup, inf] = parts.length === 5 ? parts.slice(1) : [null, ...parts.slice(1)];
+  const base = lemma.slice(0,-1), strip = p => p.replace(/^-+/,''), isAbbr = p => p.startsWith('-') || ABBR.has(p);
+  if(!inf) return {error:'Manca l\'infinito presente.'};
+  const infEnd = strip(inf).slice(-3);
+  let conj;
+  if(infEnd === 'are') conj = '1';
+  else if(infEnd === 'ire') conj = '4';
+  else if(infEnd === 'ere') conj = base.endsWith('e') ? '2' : base.endsWith('i') ? '3m' : '3';
+  else return {error:'L\'infinito presente deve terminare in -are, -ere o -ire.'};
+  const root = (conj === '2' || conj === '3m' || conj === '4') ? base.slice(0,-1) : base;
+  const expand = p => (p == null) ? null : (strip(p) === '' ? '' : (isAbbr(p) ? root + strip(p) : p));
+  sg2 = expand(sg2); perf = expand(perf); sup = expand(sup); inf = expand(inf);
+  const warnings = [];
+  if(!perf || !/i$/.test(perf)) return {error:'Il perfetto deve terminare in -i, es. laudavi.'};
+  let sp = null;
+  if(sup){
+    if(/um$/.test(sup) || /us$/.test(sup)) sp = sup.slice(0,-2);
+    else return {error:'Il supino deve terminare in -um, es. laudatum. Se il verbo non lo ha, scrivi un trattino.'};
+  }
+  const sg2c = root + {'1':'as','2':'es','3':'is','3m':'is','4':'is'}[conj];
+  const infc = root + {'1':'are','2':'ere','3':'ere','3m':'ere','4':'ire'}[conj];
+  if(sg2 && sg2 !== sg2c) warnings.push(`La 2ª persona singolare attesa è «${sg2c}», non «${sg2}».`);
+  if(inf !== infc) warnings.push(`L'infinito atteso è «${infc}», non «${inf}».`);
+  const temaPres = root + {'1':'a','2':'e','3':'','3m':'i','4':'i'}[conj];
+  const temaAcc = {'1':[temaPres],'2':[temaPres],'3':[root, root+'e', root+'i'],'3m':[temaPres, root],'4':[temaPres]}[conj];
+  const v = {lemma, sg2: sg2c, perf, sup: sp ? sp+'um' : null, inf: infc, conj, root, pf: perf.slice(0,-1), sp,
+    trans: !opts.intr, noPresPass: lemma === 'facio', temaPres, temaAcc};
+  v.paradigm = `${v.lemma}, ${v.sg2}, ${v.perf}, ${v.sup || '—'}, ${v.inf}`;
+  if(v.noPresPass) warnings.push('Il passivo di facio nel sistema del presente è irregolare (fio, fis, fit…): non viene generato.');
+  return {v, warnings};
+}
+
+/* ---------- indicativo ---------- */
+function conjugate(v){
+  if(v._E) return v._E;
+  const E = [], r = v.root, c = v.conj, presPass = v.trans && !v.noPresPass;
+  const add = (form, key, voice, p, n, sys, g=null) => E.push({form, key, voice, p, n, sys, g});
+  const six = (key, voice, sys, stem, ends) => ends.forEach((e,i) => add(stem+e, key, voice, P6[i][0], P6[i][1], sys));
+  const S = {
+    '1':{a:['o','as','at','amus','atis','ant'], p:['or','aris','atur','amur','amini','antur']},
+    '2':{a:['eo','es','et','emus','etis','ent'], p:['eor','eris','etur','emur','emini','entur']},
+    '3':{a:['o','is','it','imus','itis','unt'], p:['or','eris','itur','imur','imini','untur']},
+    '3m':{a:['io','is','it','imus','itis','iunt'], p:['ior','eris','itur','imur','imini','iuntur']},
+    '4':{a:['io','is','it','imus','itis','iunt'], p:['ior','iris','itur','imur','imini','iuntur']}
+  }[c];
+  six('ind_pres','A','pres',r,S.a); if(presPass) six('ind_pres','P','pres',r,S.p);
+  const iv = {'1':'a','2':'e','3':'e','3m':'ie','4':'ie'}[c];
+  six('ind_impf','A','pres',r+iv,['bam','bas','bat','bamus','batis','bant']);
+  if(presPass) six('ind_impf','P','pres',r+iv,['bar','baris','batur','bamur','bamini','bantur']);
+  if(c === '1' || c === '2'){
+    const fs = r + (c === '1' ? 'a' : 'e');
+    six('ind_fut','A','pres',fs,['bo','bis','bit','bimus','bitis','bunt']);
+    if(presPass) six('ind_fut','P','pres',fs,['bor','beris','bitur','bimur','bimini','buntur']);
+  } else {
+    const fs = r + (c === '3' ? '' : 'i');
+    six('ind_fut','A','pres',fs,['am','es','et','emus','etis','ent']);
+    if(presPass) six('ind_fut','P','pres',fs,['ar','eris','etur','emur','emini','entur']);
+  }
+  const pf = v.pf;
+  six('ind_perf','A','perf',pf,['i','isti','it','imus','istis','erunt']);
+  six('ind_ppf','A','perf',pf,['eram','eras','erat','eramus','eratis','erant']);
+  six('ind_futant','A','perf',pf,['ero','eris','erit','erimus','eritis','erint']);
+  if(v.sp && v.trans){
+    const s = v.sp, PE = {s:{m:'us',f:'a',n:'um'}, p:{m:'i',f:'ae',n:'a'}};
+    const AUX = {ind_perf:['sum','es','est','sumus','estis','sunt'], ind_ppf:['eram','eras','erat','eramus','eratis','erant'], ind_futant:['ero','eris','erit','erimus','eritis','erunt']};
+    for(const k in AUX) AUX[k].forEach((a,i) => {
+      const [p,n] = P6[i];
+      (p === 3 ? ['m','f','n'] : ['m','f']).forEach(g => add(s+PE[n][g]+' '+a, k, 'P', p, n, 'sup', g));
+    });
+  }
+  v._E = E;
+  return E;
+}
+const describe = e => `Indicativo ${T[e.key].toLowerCase()} ${e.voice === 'P' ? 'passivo' : 'attivo'}, ${e.p}ª pers. ${e.n === 's' ? 'sing.' : 'plur.'}${e.g ? ', ' + GN[e.g] : ''}`;
+const temaOf = (v, sys) => sys === 'pres' ? v.temaPres : sys === 'perf' ? v.pf : v.sp;
+const temaAccept = (v, sys) => (sys === 'pres' ? v.temaAcc : sys === 'perf' ? [v.pf] : v.sp ? [v.sp] : []).map(nf);
+
+/* lemmatizzazione: il sistema del presente torna sempre all'attivo */
+function targetOf(e, v){
+  if(e.sys === 'pres') return {main:v.lemma, accept:[v.lemma], label:'1ª pers. sing. ind. presente attivo',
+    near: e.voice === 'P' ? [v.root + {'1':'or','2':'eor','3':'or','3m':'ior','4':'ior'}[v.conj]] : [],
+    nearMsg: `Anche se la forma è passiva, dal tema del presente si torna all'attivo: ${v.lemma}.`};
+  if(e.sys === 'perf') return {main:v.perf, accept:[v.perf], label:'1ª pers. sing. ind. perfetto attivo', near:[v.lemma], nearMsg:'Questa forma viene dal tema del perfetto: serve la 1ª sing. del perfetto.'};
+  const s = v.sp;
+  return {main: s+'us', accept:[s+'us'], label:'participio perfetto, nom. masch. sing.',
+    near:[s+'a', s+'um', s+'i', s+'ae', s+'us sum', s+'a sum', s+'um sum', v.perf, v.lemma], nearMsg:`È un passivo del perfectum: si risale al participio perfetto al nominativo maschile singolare, ${s}us, come si trova sul vocabolario.`};
+}
+const voiceIdx = sys => sys === 'pres' ? [0,1] : sys === 'perf' ? [2] : [3];
+function commonLen(a, b){ let i = 0; while(i < a.length && i < b.length && a[i] === b[i]) i++; return i; }
+function hl(form, v, sys){
+  const n = commonLen(form, temaOf(v, sys) || '');
+  return n ? `<span class="${SYS[sys].cls}">${esc(form.slice(0,n))}</span>${esc(form.slice(n))}` : esc(form);
+}
+
+/* ---------- verbi ---------- */
+const BANK_SRC = [
+  ['laudo, laudas, laudavi, laudatum, laudare'], ['amo, amas, amavi, amatum, amare'], ['voco, vocas, vocavi, vocatum, vocare'],
+  ['porto, portas, portavi, portatum, portare'], ['paro, paras, paravi, paratum, parare'], ['do, das, dedi, datum, dare'],
+  ['iuvo, iuvas, iuvi, iutum, iuvare'], ['servo, servas, servavi, servatum, servare'],
+  ['moneo, mones, monui, monitum, monere'], ['video, vides, vidi, visum, videre'], ['deleo, deles, delevi, deletum, delere'],
+  ['habeo, habes, habui, habitum, habere'], ['teneo, tenes, tenui, tentum, tenere'], ['doceo, doces, docui, doctum, docere'],
+  ['moveo, moves, movi, motum, movere'],
+  ['lego, legis, legi, lectum, legere'], ['duco, ducis, duxi, ductum, ducere'], ['mitto, mittis, misi, missum, mittere'],
+  ['scribo, scribis, scripsi, scriptum, scribere'], ['rego, regis, rexi, rectum, regere'], ['dico, dicis, dixi, dictum, dicere'],
+  ['vinco, vincis, vici, victum, vincere'], ['pono, ponis, posui, positum, ponere'], ['peto, petis, petivi, petitum, petere'],
+  ['curro, curris, cucurri, cursum, currere', {intr:true}],
+  ['capio, capis, cepi, captum, capere'], ['accipio, accipis, accepi, acceptum, accipere'], ['fugio, fugis, fugi, fugitum, fugere'],
+  ['cupio, cupis, cupivi, cupitum, cupere'], ['facio, facis, feci, factum, facere'],
+  ['audio, audis, audivi, auditum, audire'], ['munio, munis, munivi, munitum, munire'], ['sentio, sentis, sensi, sensum, sentire'],
+  ['aperio, aperis, aperui, apertum, aperire'], ['venio, venis, veni, ventum, venire', {intr:true}], ['dormio, dormis, dormivi, dormitum, dormire', {intr:true}]
+];
+const BANK = BANK_SRC.map(([s,o]) => parseParadigm(s, o||{}).v).filter(Boolean);
+
+/* ---------- impostazioni ---------- */
+const DEF = {conj:['1','2','3','3m','4'], sys:['pres','perf','sup'], passive:true, askAnalysis:true, onlyCustom:false};
+let settings = Object.assign({}, DEF, store.get('paradigmi.settings', {}));
+let custom = store.get('paradigmi.custom', []);
+const INTR = /\s*\(?\bintr\.?\)?\s*$/i;
+const parseLine = s => parseParadigm(s.replace(INTR, ''), {intr: INTR.test(s)});
+const customVerbs = () => custom.map(s => parseLine(s).v).filter(Boolean);
+$('#bulk-add').addEventListener('click', () => {
+  const lines = $('#bulk').value.split(/\n/).map(l => l.trim()).filter(Boolean);
+  const bad = [], known = new Set(BANK.concat(customVerbs()).map(v => v.lemma));
+  let added = 0;
+  lines.forEach(l => {
+    const r = parseLine(l);
+    if(r.error){ bad.push(`«${l}»: ${r.error}`); return; }
+    if(known.has(r.v.lemma)) return;
+    const v = r.v;
+    custom.push(`${v.lemma}, ${v.sg2}, ${v.perf}, ${v.sup || '-'}, ${v.inf}${v.trans ? '' : ' intr'}`);
+    known.add(v.lemma); added++;
+  });
+  store.set('paradigmi.custom', custom); renderSettings();
+  const fb = $('#bulk-fb');
+  fb.className = 'fb ' + (bad.length ? 'bad' : 'ok');
+  fb.innerHTML = `${added} ${added === 1 ? 'verbo aggiunto' : 'verbi aggiunti'}.` + (bad.length ? '<br>' + bad.map(esc).join('<br>') : '');
+  if(!bad.length) $('#bulk').value = '';
+});
+function renderSettings(){
+  const box = $('#settings');
+  $$('input[data-set]', box).forEach(inp => { const k = inp.dataset.set; inp.checked = Array.isArray(settings[k]) ? settings[k].includes(inp.value) : !!settings[k]; });
+  const n = settings.conj.length;
+  $('.sum', box).textContent = `· ${n === 5 ? 'tutte le coniugazioni' : n + (n === 1 ? ' coniugazione' : ' coniugazioni')} · temi: ${settings.sys.map(s => SYS[s].l).join(', ') || 'nessuno'} · ${settings.passive ? 'con passivo' : 'solo attivo'}`;
+  $('.custom-list', box).innerHTML = custom.length
+    ? custom.map((s,i) => `<span class="pill">${esc(s.split(',')[0])}<button type="button" data-rm="${i}" aria-label="Rimuovi">×</button></span>`).join('')
+    : '<span class="muted" style="font-size:.88rem">Nessuno. In Esplora usa «Aggiungi agli esercizi».</span>';
+}
+$('#settings').addEventListener('change', ev => {
+  const inp = ev.target.closest('input[data-set]'); if(!inp) return;
+  const k = inp.dataset.set;
+  if(Array.isArray(settings[k])){ const s = new Set(settings[k]); inp.checked ? s.add(inp.value) : s.delete(inp.value); settings[k] = Array.from(s); }
+  else settings[k] = inp.checked;
+  store.set('paradigmi.settings', settings); renderSettings();
+  if(k === 'askAnalysis' && mode === 'sali') renderL3();
+});
+$('#settings').addEventListener('click', ev => {
+  const b = ev.target.closest('[data-rm]'); if(!b) return;
+  custom.splice(+b.dataset.rm, 1); store.set('paradigmi.custom', custom); renderSettings();
+});
+function pickItem(){
+  let verbs = (settings.onlyCustom ? customVerbs() : BANK.concat(customVerbs())).filter(v => settings.conj.includes(v.conj));
+  for(let t = 0; t < 80 && verbs.length; t++){
+    const v = rnd(verbs);
+    const E = conjugate(v).filter(e => settings.sys.includes(e.sys) && (settings.passive || e.voice !== 'P'));
+    if(!E.length) continue;
+    const by = {}; E.forEach(e => (by[e.sys] = by[e.sys] || []).push(e));
+    return {v, e: rnd(by[rnd(Object.keys(by))])};
+  }
+  return null;
+}
+
+/* ---------- componenti ---------- */
+const ARR_DOWN = '<svg viewBox="0 0 18 26" aria-hidden="true"><path d="M9 2v20M3 16l6 7 6-7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+const ARR_UP = '<svg viewBox="0 0 18 26" aria-hidden="true"><path d="M9 24V4M3 10l6-7 6 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+function paraView(v, focus){
+  const g = (cls, words, label) => `<div class="g ${cls}${focus && cls !== focus ? ' dim' : ''}"><div class="w">${words}</div><div class="bar"></div><div class="l">${label}</div></div>`;
+  return `<div class="pv">
+    ${g('pres', `${esc(v.lemma)}, ${esc(v.sg2)},`, 'presente ind.<br>1ª e 2ª sing.')}
+    ${g('perf', `${esc(v.perf)},`, 'perfetto ind.<br>1ª sing.')}
+    ${g('sup', `${esc(v.sup || '—')},`, 'supino<br>&nbsp;')}
+    ${g('inf', esc(v.inf), 'infinito<br>presente')}
+  </div><span class="conj-tag">${CONJ[v.conj]}</span>`;
+}
+function presOp(v){ return v.conj === '3' ? `${v.sg2} − is` : `${v.sg2} − s`; }
+const USE = {pres:'presente, imperfetto, futuro · attivo e passivo', perf:'perfetto, piuccheperfetto, futuro anteriore · attivo', sup:'perfetto, piuccheperfetto, futuro anteriore · passivo'};
+
+/* ---------- stato ---------- */
+let mode = 'esplora', current = null, X = null, score = {done:0, ok:0};
+
+function setLevel(n){
+  [1,2,3].forEach(i => $('#L'+i).classList.toggle('active', i === n));
+  if(n) $('#L'+n).scrollIntoView({behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block:'nearest'});
+}
+function markDone(n, ok){
+  $('#L'+n).classList.toggle('done', !!ok);
+  $('#L'+n+'st').innerHTML = ok ? '<span style="color:var(--ok)">✓ fatto</span>' : '';
+}
+function conn(dir){
+  const html = dir === 'up' ? `${ARR_UP} sali` : dir === 'down' ? `${ARR_DOWN} scendi` : ARR_DOWN;
+  $('#c12').innerHTML = html; $('#c23').innerHTML = html;
+}
+function count(allOk){
+  if(X.counted) return;
+  X.counted = true; score.done++; if(allOk) score.ok++;
+  $('#score').innerHTML = `Esercizi <b>${score.done}</b> · tutti i piani giusti <b>${score.ok}</b>`;
+}
+function renderScore(){ $('#score').innerHTML = `Esercizi <b>${score.done}</b> · tutti i piani giusti <b>${score.ok}</b>`; }
+
+/* ---------- ESPLORA ---------- */
+function explore(str){
+  const res = parseParadigm(str);
+  const msg = $('#L1msg');
+  if(res.error){ msg.innerHTML = `<p class="msg bad">${esc(res.error)}</p>`; return; }
+  msg.innerHTML = res.warnings.map(w => `<p class="msg warn">${esc(w)}</p>`).join('');
+  current = res.v;
+  $('#L1view').innerHTML = paraView(current);
+  renderExploreTemi(); renderExploreForme();
+}
+function renderExplore(){
+  conn('down');
+  $('#L1s').textContent = 'Scrivi il paradigma di un verbo: le cinque voci separate da virgole.';
+  $('#L2s').textContent = 'Ogni voce del paradigma dà un tema.';
+  $('#L3s').textContent = 'Da ogni tema nascono i tempi dell\'indicativo. Apri un tempo per la coniugazione completa.';
+  $('#L1b').innerHTML = `
+    <form class="entry" id="para-form">
+      <input class="field" id="para-in" type="text" autocomplete="off" spellcheck="false" value="${esc(current ? current.paradigm : 'laudo, as, avi, atum, are')}" aria-label="Paradigma">
+      <button class="btn" type="submit">Ricava i temi</button>
+    </form>
+    <div class="samples"><span class="muted">Anche abbreviato. Esempi:</span>
+      ${['laudo','moneo','lego','capio','audio','rego','mitto','video'].map(l => `<button type="button" data-par="${esc(BANK.find(b => b.lemma === l).paradigm)}">${l}</button>`).join('')}
+      <button type="button" class="plain" id="rand-verb">Verbo a caso</button>
+      <button type="button" class="plain" id="add-custom">Aggiungi agli esercizi</button>
+    </div>
+    <div id="L1msg"></div><div id="L1view"></div>`;
+  $('#para-form').addEventListener('submit', e => { e.preventDefault(); explore($('#para-in').value); });
+  $('#L1b .samples').addEventListener('click', e => {
+    const b = e.target.closest('[data-par]');
+    if(b){ $('#para-in').value = b.dataset.par; explore(b.dataset.par); }
+  });
+  $('#rand-verb').addEventListener('click', () => { const v = rnd(BANK); $('#para-in').value = v.paradigm; explore(v.paradigm); });
+  $('#add-custom').addEventListener('click', e => {
+    if(!current) return;
+    const v = current, s = `${v.lemma}, ${v.sg2}, ${v.perf}, ${v.sup || '-'}, ${v.inf}`;
+    if(!custom.some(x => norm(x) === norm(s))){ custom.push(s); store.set('paradigmi.custom', custom); renderSettings(); }
+    e.target.textContent = `${v.lemma} aggiunto ✓`;
+  });
+  explore($('#para-in').value);
+}
+function renderExploreTemi(){
+  const v = current;
+  const card = (sys, from, tema) => `<div class="tcard ${sys}"><span class="tl">Tema del ${SYS[sys].l}</span><span class="from">${from}</span><span class="tv">${tema ? esc(tema) + '-' : '—'}</span><span class="tuse">${USE[sys]}</span></div>`;
+  $('#L2b').innerHTML = `<div class="cols">
+    ${card('pres', `<span class="lat">${esc(presOp(v))}</span>`, v.temaPres)}
+    ${card('perf', `<span class="lat">${esc(v.perf)} − i</span>`, v.pf)}
+    ${card('sup', v.sup ? `<span class="lat">${esc(v.sup)} − um</span>` : 'il verbo non ha supino', v.sp)}
+  </div>`;
+}
+function renderExploreForme(){
+  const v = current, E = conjugate(v);
+  const col = sys => {
+    const keys = sys === 'pres' ? ['ind_pres','ind_impf','ind_fut'] : ['ind_perf','ind_ppf','ind_futant'];
+    const brick = sys === 'sup' && v.sp ? `<div class="brick">participio perfetto <span class="lat">${hl(v.sp+'us', v, 'sup')}, -a, -um</span> + <span class="lat">sum</span></div>` : '';
+    const rows = keys.map(key => {
+      const inS = E.filter(e => e.key === key && e.sys === sys);
+      if(!inS.length) return '';
+      const A = inS.filter(e => e.voice === 'A'), P = inS.filter(e => e.voice === 'P');
+      const cell = (arr, p, n) => { const e = arr.find(x => x.p === p && x.n === n && (!x.g || x.g === 'm')); return e ? hl(e.form, v, sys) : '—'; };
+      const sample = [A, P].filter(a => a.length).map(a => cell(a,1,'s')).join(' <span class="muted">/</span> ');
+      return `<details><summary><span class="tn">${T[key]}${sys === 'sup' ? ' passivo' : ''}</span><span class="sample">${sample}</span></summary>
+        <div class="ctab"><table><thead><tr><th></th>${A.length ? '<th>Attivo</th>' : ''}${P.length ? '<th>Passivo</th>' : ''}</tr></thead><tbody>${
+          P6.map(([p,n]) => `<tr><td class="p">${p}ª ${n === 's' ? 'sing.' : 'plur.'}</td>${A.length ? `<td class="f">${cell(A,p,n)}</td>` : ''}${P.length ? `<td class="f">${cell(P,p,n)}</td>` : ''}</tr>`).join('')
+        }</tbody></table></div></details>`;
+    }).join('');
+    const empty = !rows ? `<p class="brick" style="padding-bottom:12px">${v.sp ? 'Verbo intransitivo: niente passivo personale.' : 'Il verbo non ha supino.'}</p>` : '';
+    return `<div class="fcol ${sys}">${brick}${rows}${empty}</div>`;
+  };
+  $('#L3b').innerHTML = `<div class="cols">${col('pres')}${col('perf')}${col('sup')}</div>`;
+}
+
+/* ---------- SCENDI: paradigma → temi → forma ---------- */
+function renderScendi(){
+  conn('down');
+  X = pickItem(); [1,2,3].forEach(i => markDone(i, false));
+  if(!X){ noItems(); return; }
+  X.ok = {};
+  const v = X.v;
+  $('#L1s').textContent = 'Parti da qui: leggi il paradigma.';
+  $('#L2s').textContent = 'Ricava i tre temi e scrivili nei riquadri.';
+  $('#L3s').textContent = 'Forma il tempo richiesto partendo dal tema giusto.';
+  $('#L1b').innerHTML = paraView(v);
+  markDone(1, true);
+  $('#L2b').innerHTML = `<div class="cols">${SYSK.map(sys => `
+    <div class="tcard ${sys}"><span class="tl">Tema del ${SYS[sys].l}</span>
+      ${sys === 'sup' && !v.sp ? '<span class="tv">—</span>' : `<input type="text" id="d-${sys}" autocomplete="off" spellcheck="false" aria-label="Tema del ${SYS[sys].l}"><span class="qfb" id="dfb-${sys}"></span>`}
+    </div>`).join('')}</div>
+    <div class="lv-foot"><span class="fb" id="fb2"></span><button class="btn" type="button" id="chk2">Verifica i temi e scendi ↓</button></div>`;
+  $('#L3b').innerHTML = `<p class="req">${esc(describe(X.e))}</p>
+    <form class="task" id="f3"><div class="row"><input type="text" id="d-form" autocomplete="off" spellcheck="false" placeholder="scrivi la forma" aria-label="Forma"><button class="btn" type="submit">Verifica</button></div>
+    <div class="fb" id="fb3"></div></form>`;
+  $('#chk2').addEventListener('click', () => {
+    let all = true;
+    SYSK.forEach(sys => {
+      const inp = $('#d-'+sys); if(!inp) return;
+      const ok = temaAccept(v, sys).includes(nf(inp.value));
+      if(!ok) all = false;
+      const fb = $('#dfb-'+sys); fb.className = 'qfb ' + (ok ? 'ok' : 'bad'); fb.textContent = ok ? 'giusto' : (inp.value.trim() ? 'riprova' : 'manca');
+    });
+    X.ok[2] = all; markDone(2, all);
+    const fb = $('#fb2'); fb.className = 'fb ' + (all ? 'ok' : 'bad');
+    fb.textContent = all ? 'Temi giusti. Ora scendi alle forme.' : 'Controlla i temi segnati.';
+    if(all){ setLevel(3); $('#d-form').focus({preventScroll:true}); }
+  });
+  $('#f3').addEventListener('submit', ev => {
+    ev.preventDefault();
+    const ans = nf($('#d-form').value), fb = $('#fb3');
+    if(!ans){ fb.className = 'fb bad'; fb.textContent = 'Scrivi la forma.'; return; }
+    const d = describe(X.e), ok = conjugate(v).some(x => describe(x) === d && nf(x.form) === ans);
+    X.ok[3] = ok; markDone(3, ok);
+    if(ok){ fb.className = 'fb ok'; fb.innerHTML = 'Giusto: ' + explainForm(v, X.e); count(!!X.ok[2]); }
+    else {
+      const other = conjugate(v).find(x => nf(x.form) === ans);
+      fb.className = 'fb bad';
+      fb.innerHTML = other ? `Questa forma esiste, ma è: ${esc(describe(other))}.` : `Non è la forma richiesta. Da quale tema parte questo tempo?`;
+    }
+  });
+  setLevel(2);
+}
+function explainForm(v, e){
+  const t = temaOf(v, e.sys), n = commonLen(e.form, t);
+  return `<span class="lat">${hl(e.form, v, e.sys)}</span> = tema del ${SYS[e.sys].l} <span class="lat ${SYS[e.sys].cls}">${esc(t)}-</span>${n < e.form.length ? ` + <span class="lat">${esc(e.form.slice(n))}</span>` : ''}`;
+}
+
+/* ---------- SALI: forma → temi → paradigma ---------- */
+function renderSali(){
+  conn('up');
+  X = pickItem(); [1,2,3].forEach(i => markDone(i, false));
+  if(!X){ noItems(); return; }
+  X.ok = {};
+  $('#L3s').textContent = 'Parti da qui: analizza la forma e riportala alla voce del paradigma.';
+  $('#L2s').textContent = 'Scrivi il tema nel riquadro giusto: uno solo.';
+  $('#L1s').textContent = 'Arriva in cima: scrivi il paradigma completo.';
+  renderL3();
+  $('#L2b').innerHTML = `<div class="cols">${SYSK.map(sys => `
+    <div class="tcard ${sys}" id="uc-${sys}"><span class="tl">Tema del ${SYS[sys].l}</span><span class="tuse">${USE[sys]}</span>
+      <input type="text" id="u-${sys}" autocomplete="off" spellcheck="false" aria-label="Tema del ${SYS[sys].l}"><span class="qfb" id="ufb-${sys}"></span>
+    </div>`).join('')}</div>
+    <div class="lv-foot"><span class="fb" id="fb2"></span><button class="btn" type="button" id="chk2">Verifica il tema e sali ↑</button></div>`;
+  $('#L1b').innerHTML = `<form class="task" id="f1"><div class="row"><input type="text" id="u-par" autocomplete="off" spellcheck="false" placeholder="es. rego, regis, rexi, rectum, regere" aria-label="Paradigma"><button class="btn" type="submit">Verifica</button></div><div class="fb" id="fb1"></div><div id="u-pv"></div></form>`;
+  $('#chk2').addEventListener('click', checkSali2);
+  $('#f1').addEventListener('submit', ev => { ev.preventDefault(); checkSali1(); });
+  setLevel(3);
+}
+const matches = () => conjugate(X.v).filter(x => nf(x.form) === nf(X.e.form));
+function renderL3(){
+  if(mode !== 'sali' || !X) return;
+  $('#L3b').innerHTML = `<div class="bigform">${esc(X.e.form)}</div>
+    <form class="task" id="f3">
+      ${settings.askAnalysis ? `<div><h3>Analizza la forma</h3><div class="row">
+        <select id="u-key" aria-label="Tempo"><option value="">Tempo…</option>${Object.entries(T).map(([k,l]) => `<option value="${k}">${l}</option>`).join('')}</select>
+        <select id="u-voice" aria-label="Diatesi"><option value="">Diatesi…</option><option value="A">attiva</option><option value="P">passiva</option></select>
+        <select id="u-pers" aria-label="Persona"><option value="">Persona…</option>${P6.map(([p,n]) => `<option value="${p}${n}">${p}ª ${n === 's' ? 'sing.' : 'plur.'}</option>`).join('')}</select>
+      </div><div class="fb" id="fb3a" style="margin-top:8px"></div></div>` : ''}
+      <div><h3>Riportala alla voce del paradigma</h3>
+        <p class="help">Tema del presente → 1ª sing. del presente <b>attivo</b>, anche se la forma è passiva (<span class="lat">laudabatur → laudo</span>). Tema del perfetto → 1ª sing. del perfetto (<span class="lat">laudaverat → laudavi</span>). Passivi del perfectum → <b>participio perfetto</b> (<span class="lat">laudatae eritis → laudatus</span>).</p>
+        <div class="row"><input type="text" id="u-lem" autocomplete="off" spellcheck="false" placeholder="es. laudavi" aria-label="Voce del paradigma"><button class="btn" type="submit">Verifica e sali ↑</button></div>
+        <div class="fb" id="fb3b" style="margin-top:8px"></div>
+      </div>
+    </form>`;
+  $('#f3').addEventListener('submit', ev => { ev.preventDefault(); checkSali3(); });
+}
+function checkSali3(){
+  const v = X.v, M = matches();
+  let all = true;
+  if(settings.askAnalysis){
+    const sel = {key:$('#u-key').value, voice:$('#u-voice').value, pers:$('#u-pers').value}, fb = $('#fb3a');
+    if(!sel.key || !sel.voice || !sel.pers){ all = false; fb.className = 'fb bad'; fb.textContent = 'Completa tempo, diatesi e persona.'; }
+    else if(M.some(x => x.key === sel.key && x.voice === sel.voice && sel.pers === x.p + x.n)){ fb.className = 'fb ok'; fb.textContent = 'Analisi corretta.'; }
+    else { all = false; fb.className = 'fb bad'; fb.textContent = M.some(x => x.key === sel.key) ? 'Il tempo è giusto: controlla diatesi o persona.' : 'Rivedi il tempo: guarda suffisso e desinenza.'; }
+  }
+  const t = nf($('#u-lem').value), fb = $('#fb3b'), targets = M.map(x => targetOf(x, v));
+  if(!t){ all = false; fb.className = 'fb bad'; fb.textContent = 'Scrivi la voce del paradigma.'; }
+  else if(targets.some(g => g.accept.map(nf).includes(t))){ fb.className = 'fb ok'; fb.textContent = 'Giusto.'; }
+  else {
+    all = false; fb.className = 'fb bad';
+    const g = targets.find(g => (g.near||[]).map(nf).includes(t));
+    fb.textContent = g ? g.nearMsg : 'Non è la voce del paradigma da cui viene questa forma.';
+  }
+  X.ok[3] = all; markDone(3, all);
+  if(all){ setLevel(2); }
+}
+function checkSali2(){
+  const v = X.v, M = matches();
+  const filled = SYSK.filter(s => nf($('#u-'+s).value));
+  SYSK.forEach(s => { $('#ufb-'+s).textContent = ''; $('#ufb-'+s).className = 'qfb'; });
+  const fb = $('#fb2');
+  let ok = false;
+  if(!filled.length){ fb.className = 'fb bad'; fb.textContent = 'Scrivi il tema in uno dei tre riquadri.'; }
+  else if(filled.length > 1){ fb.className = 'fb bad'; fb.textContent = 'La forma viene da un tema solo: lascia pieno un riquadro.'; }
+  else {
+    const s = filled[0], rightSys = M.some(x => x.sys === s), rightTema = rightSys && temaAccept(v, s).includes(nf($('#u-'+s).value));
+    const q = $('#ufb-'+s);
+    if(!rightSys){ fb.className = 'fb bad'; fb.textContent = `Non viene dal tema del ${SYS[s].l}. Guarda tempo e diatesi al piano 3.`; q.className = 'qfb bad'; q.textContent = 'riquadro sbagliato'; }
+    else if(!rightTema){ fb.className = 'fb bad'; fb.textContent = 'Il riquadro è giusto, ma il tema è scritto male.'; q.className = 'qfb bad'; q.textContent = 'riprova'; }
+    else { ok = true; fb.className = 'fb ok'; fb.textContent = 'Giusto. Ora sali al paradigma.'; q.className = 'qfb ok'; q.textContent = 'giusto'; }
+  }
+  X.ok[2] = ok; markDone(2, ok);
+  if(ok){ setLevel(1); $('#u-par').focus({preventScroll:true}); }
+}
+function checkSali1(){
+  const v = X.v, fb = $('#fb1'), p = parseParadigm($('#u-par').value);
+  let ok = false;
+  if(p.error){ fb.className = 'fb bad'; fb.textContent = p.error; }
+  else {
+    const u = p.v, wrong = [];
+    if(u.lemma !== v.lemma) wrong.push('presente');
+    if(u.perf !== v.perf) wrong.push('perfetto');
+    if((u.sup||'') !== (v.sup||'')) wrong.push('supino');
+    if(u.inf !== v.inf) wrong.push('infinito');
+    ok = !wrong.length;
+    fb.className = 'fb ' + (ok ? 'ok' : 'bad');
+    fb.textContent = ok ? `Sei arrivato in cima: ${CONJ[v.conj]}.` : `Controlla: ${wrong.join(', ')}.`;
+  }
+  X.ok[1] = ok; markDone(1, ok);
+  if(ok){ $('#u-pv').innerHTML = '<div style="margin-top:16px">' + paraView(v, X.e.sys) + '</div>'; count(!!(X.ok[2] && X.ok[3])); }
+}
+
+/* ---------- soluzione ---------- */
+function showSolution(){
+  if(!X) return;
+  const v = X.v, e = X.e;
+  if(!X.counted){ X.counted = true; score.done++; renderScore(); }
+  if(mode === 'scendi'){
+    SYSK.forEach(s => { const i = $('#d-'+s); if(i) i.value = temaOf(v, s) + '-'; });
+    $('#d-form').value = e.form;
+    const fb = $('#fb3'); fb.className = 'fb info'; fb.innerHTML = 'Soluzione: ' + explainForm(v, e);
+    $('#fb2').className = 'fb info'; $('#fb2').textContent = 'Temi della soluzione.';
+  } else {
+    const t = targetOf(e, v);
+    $('#u-lem').value = t.main;
+    if(settings.askAnalysis){ $('#u-key').value = e.key; $('#u-voice').value = e.voice; $('#u-pers').value = e.p + e.n; }
+    const alt = [...new Set(matches().filter(x => x !== e && !(x.key === e.key && x.voice === e.voice && x.p === e.p && x.n === e.n)).map(describe))];
+    $('#fb3b').className = 'fb info';
+    $('#fb3b').innerHTML = `${esc(describe(e))} → <span class="lat">${hl(t.main, v, e.sys)}</span>${alt.length ? `<br>Può anche essere: ${alt.map(esc).join('; ')}` : ''}`;
+    SYSK.forEach(s => { $('#u-'+s).value = s === e.sys ? temaOf(v, s) + '-' : ''; $('#uc-'+s).classList.toggle('right', s === e.sys); });
+    $('#fb2').className = 'fb info'; $('#fb2').innerHTML = `Tema del ${SYS[e.sys].l} <span class="lat ${SYS[e.sys].cls}">${esc(temaOf(v, e.sys))}-</span>`;
+    $('#u-par').value = v.paradigm;
+    $('#fb1').className = 'fb info'; $('#fb1').textContent = CONJ[v.conj];
+    $('#u-pv').innerHTML = '<div style="margin-top:16px">' + paraView(v, e.sys) + '</div>';
+  }
+}
+function noItems(){
+  ['L1b','L2b','L3b'].forEach(id => $('#'+id).innerHTML = '<p class="muted">Nessuna forma con queste impostazioni: attiva almeno una coniugazione e un tema.</p>');
+}
+
+/* ---------- modalità ---------- */
+function setMode(m){
+  mode = m;
+  $$('.modes button').forEach(b => b.setAttribute('aria-pressed', b.dataset.mode === m ? 'true' : 'false'));
+  $('#ex-actions').hidden = m === 'esplora';
+  $('#settings').hidden = m === 'esplora';
+  [1,2,3].forEach(i => markDone(i, false));
+  store.set('paradigmi.mode', m);
+  if(m === 'esplora'){ setLevel(0); renderExplore(); }
+  else if(m === 'scendi') renderScendi();
+  else renderSali();
+}
+$('.modes').addEventListener('click', e => { const b = e.target.closest('[data-mode]'); if(b) setMode(b.dataset.mode); });
+$('#btn-new').addEventListener('click', () => setMode(mode));
+$('#btn-sol').addEventListener('click', showSolution);
+[1,2,3].forEach(i => $('#L'+i).addEventListener('focusin', () => { if(mode !== 'esplora') [1,2,3].forEach(j => $('#L'+j).classList.toggle('active', j === i)); }));
+
+renderSettings(); renderScore();
+const h = (location.hash || '').slice(1);
+setMode(['esplora','scendi','sali'].includes(h) ? h : store.get('paradigmi.mode','esplora'));
+})();
+</script>
+
+</body>
+</html>
