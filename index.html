@@ -375,9 +375,32 @@ const BANK_SRC = [
   ['capio, capis, cepi, captum, capere'], ['accipio, accipis, accepi, acceptum, accipere'], ['fugio, fugis, fugi, fugitum, fugere'],
   ['cupio, cupis, cupivi, cupitum, cupere'], ['facio, facis, feci, factum, facere'],
   ['audio, audis, audivi, auditum, audire'], ['munio, munis, munivi, munitum, munire'], ['sentio, sentis, sensi, sensum, sentire'],
-  ['aperio, aperis, aperui, apertum, aperire'], ['venio, venis, veni, ventum, venire', {intr:true}], ['dormio, dormis, dormivi, dormitum, dormire', {intr:true}]
+  ['aperio, aperis, aperui, apertum, aperire'], ['venio, venis, veni, ventum, venire', {intr:true}], ['dormio, dormis, dormivi, dormitum, dormire', {intr:true}],
+  /* vocabolario 19 */
+  ['cogito, as, avi, atum, are', {m:'pensare'}],
+  ['laboro, as, avi, atum, are', {intr:true, m:'affaticarsi, soffrire, lavorare'}],
+  ['oro, as, avi, atum, are', {m:'pregare, implorare'}],
+  ['erro, as, avi, atum, are', {intr:true, m:'errare, vagare, sbagliare'}],
+  ['specto, as, avi, atum, are', {m:'guardare, osservare'}],
+  ['sto, as, steti, statum, are', {intr:true, m:'stare, star fermo, resistere'}],
+  ['timeo, es, timui, -, ere', {m:'temere'}],
+  ['debeo, es, debui, debitum, ere', {m:'dovere'}],
+  ['cado, is, cecidi, casum, ere', {intr:true, m:'cadere'}],
+  ['caedo, is, cecidi, caesum, ere', {m:'tagliare; abbattere'}],
+  ['cedo, is, cessi, cessum, ere', {intr:true, m:'cedere, ritirarsi'}],
+  ['vivo, is, vixi, victum, ere', {intr:true, m:'vivere'}],
+  ['gero, is, gessi, gestum, ere', {m:'gestire, fare, portare'}],
+  ['colo, is, colui, cultum, ere', {m:'coltivare; venerare; abitare'}],
+  ['relinquo, is, reliqui, relictum, ere', {m:'lasciare, abbandonare'}],
+  ['pello, is, pepuli, pulsum, ere', {m:'spingere, respingere, scacciare'}],
+  ['trado, is, tradidi, traditum, ere', {m:'affidare, consegnare; tramandare'}],
+  ['quaero, is, quaesivi, quaesitum, ere', {m:'chiedere (per sapere), cercare'}],
+  ['invenio, is, inveni, inventum, ire', {m:'trovare, rinvenire; inventare'}],
+  ['scio, is, scivi, scitum, ire', {m:'sapere'}]
 ];
-const BANK = BANK_SRC.map(([s,o]) => parseParadigm(s, o||{}).v).filter(Boolean);
+const MEAN = {voco:'chiamare', paro:'preparare; procurare', video:'vedere', teneo:'tenere, occupare, mantenere', moveo:'muovere; commuovere; suscitare',
+  vinco:'vincere', duco:'condurre, guidare', rego:'reggere, governare, dirigere', peto:'chiedere (per avere), cercare; dirigersi verso; assalire'};
+const BANK = BANK_SRC.map(([s,o]) => { const v = parseParadigm(s, o||{}).v; if(v) v.m = (o && o.m) || MEAN[v.lemma] || ''; return v; }).filter(Boolean);
 
 /* ---------- impostazioni ---------- */
 const DEF = {conj:['1','2','3','3m','4'], sys:['pres','perf','sup'], passive:true, askAnalysis:true, onlyCustom:false};
@@ -448,7 +471,7 @@ function paraView(v, focus){
     ${g('perf', `${esc(v.perf)},`, 'perfetto ind.<br>1ª sing.')}
     ${g('sup', `${esc(v.sup || '—')},`, 'supino<br>&nbsp;')}
     ${g('inf', esc(v.inf), 'infinito<br>presente')}
-  </div><span class="conj-tag">${CONJ[v.conj]}</span>`;
+  </div><span class="conj-tag">${CONJ[v.conj]}${v.m ? ' · <b style="color:var(--ink)">' + esc(v.m) + '</b>' : ''}</span>`;
 }
 function presOp(v){ return v.conj === '3' ? `${v.sg2} − is` : `${v.sg2} − s`; }
 const USE = {pres:'presente, imperfetto, futuro · attivo e passivo', perf:'perfetto, piuccheperfetto, futuro anteriore · attivo', sup:'perfetto, piuccheperfetto, futuro anteriore · passivo'};
@@ -482,6 +505,8 @@ function explore(str){
   if(res.error){ msg.innerHTML = `<p class="msg bad">${esc(res.error)}</p>`; return; }
   msg.innerHTML = res.warnings.map(w => `<p class="msg warn">${esc(w)}</p>`).join('');
   current = res.v;
+  const known = BANK.find(b => b.lemma === current.lemma);
+  if(known && known.perf === current.perf) current.m = known.m;
   $('#L1view').innerHTML = paraView(current);
   renderExploreTemi(); renderExploreForme();
 }
